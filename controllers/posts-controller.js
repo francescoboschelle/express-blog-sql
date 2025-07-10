@@ -1,7 +1,26 @@
 import connection from "../db/connection.js";
 
 // GET /
-function index(req, res) {}
+function index(req, res) {
+  const sql = "SELECT * FROM posts;";
+
+  connection.query(sql, (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: true,
+        message: "Internal Server Error",
+      });
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        error: true,
+        message: "Not Found",
+      });
+    }
+
+    return res.json(results);
+  });
+}
 
 // GET /:d
 function show(req, res) {}

@@ -3,7 +3,7 @@ import mysql from "mysql2";
 
 const credentials = {
   host: "localhost",
-  user: "host",
+  user: "root",
   password: process.env.DB_PSW,
   database: "blog",
   port: "3306",

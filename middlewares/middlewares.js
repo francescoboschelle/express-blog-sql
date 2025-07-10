@@ -1,13 +1,13 @@
 export function errorHandler(err, req, res, next) {
   res.status(500).json({
-    error: "Internal Error",
-    message: "Il server ha generato un errore interno",
+    error: true,
+    message: "Internal Server Error",
   });
 }
 
 export function routeNotFound(req, res, next) {
   res.status(404).json({
-    error: "Not Found",
-    message: "L'endpoint non esiste",
+    error: true,
+    message: "Not Found",
   });
 }
