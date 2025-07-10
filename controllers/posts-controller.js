@@ -8,15 +8,14 @@ function index(req, res) {
     if (err)
       return res.status(500).json({
         error: true,
-        message: "Internal Server Error",
+        message: err.message,
       });
 
-    if (results.length === 0) {
+    if (results.length === 0)
       return res.status(404).json({
         error: true,
         message: "Not Found",
       });
-    }
 
     return res.json(results);
   });
@@ -26,12 +25,11 @@ function index(req, res) {
 function show(req, res) {
   const id = parseInt(req.params.id);
 
-  if (isNaN(id)) {
+  if (isNaN(id))
     return res.status(400).json({
       error: true,
       message: "Bad Request",
     });
-  }
 
   const sql = "SELECT * FROM posts WHERE id = ?;";
 
@@ -39,22 +37,62 @@ function show(req, res) {
     if (err)
       return res.status(500).json({
         error: true,
-        message: "Internal Server Error",
+        message: err.message,
       });
 
-    if (results.length === 0) {
+    if (results.length === 0)
       return res.status(404).json({
         error: true,
         message: "Not Found",
       });
-    }
 
     return res.json(results[0]);
   });
 }
 
 // POST
-function store(req, res) {}
+function store(req, res) {
+  const body = req.body;
+
+  if (!body || !body.title || !body.content || !body.image)
+    return res.status(400).json({
+      error: true,
+      message: "Bad Request",
+    });
+
+  const sql = "INSERT INTO posts (title, content, image) VALUES (?, ?, ?);";
+
+  connection.query(
+    sql,
+    [body.title, body.content, body.image],
+    (err, result) => {
+      if (err)
+        return res.status(500).json({
+          error: true,
+          message: err.message,
+        });
+
+      const id = result.insertId;
+
+      const selectSql = "SELECT * FROM posts WHERE id = ?;";
+      connection.query(selectSql, [id], (err, results) => {
+        if (err)
+          return res.status(500).json({
+            error: true,
+            message: err.message,
+          });
+
+        if (results.length === 0)
+          return res.status(404).json({
+            error: true,
+            message: "Not Found",
+          });
+
+        return res.json(results[0]);
+      });
+    }
+  );
+}
 
 // PUT /:id
 function update(req, res) {}
@@ -79,7 +117,7 @@ function destroy(req, res) {
     if (err)
       return res.status(500).json({
         error: true,
-        message: "Internal Server Error",
+        message: err.message,
       });
 
     if (results.affectedRows === 0) {
