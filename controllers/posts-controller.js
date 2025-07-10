@@ -95,7 +95,55 @@ function store(req, res) {
 }
 
 // PUT /:id
-function update(req, res) {}
+function update(req, res) {
+  const id = parseInt(req.params.id);
+  const body = req.body;
+
+  if (isNaN(id) || !body || !body.title || !body.content || !body.image) {
+    return res.status(400).json({
+      error: true,
+      message: "Bad Request",
+    });
+  }
+
+  const updateSql =
+    "UPDATE posts SET title = ?, content = ?, image = ? WHERE id = ?;";
+  connection.query(
+    updateSql,
+    [body.title, body.content, body.image, id],
+    (err, results) => {
+      if (err)
+        return res.status(500).json({
+          error: true,
+          message: err.message,
+        });
+
+      if (results.affectedRows === 0)
+        return res.status(404).json({
+          error: true,
+          message: "Not Found",
+        });
+
+      const selectSql = "SELECT * FROM posts WHERE id = ?;";
+
+      connection.query(selectSql, [id], (err, results) => {
+        if (err)
+          return res.status(500).json({
+            error: true,
+            message: err.message,
+          });
+
+        if (results.length === 0)
+          return res.status(404).json({
+            error: true,
+            message: "Not Found",
+          });
+
+        return res.json(results[0]);
+      });
+    }
+  );
+}
 
 // PATCH /:id
 function modify(req, res) {}
