@@ -23,7 +23,35 @@ function index(req, res) {
 }
 
 // GET /:d
-function show(req, res) {}
+function show(req, res) {
+  const id = parseInt(req.params.id);
+
+  if (isNaN(id)) {
+    return res.status(400).json({
+      error: true,
+      message: "Bad Request",
+    });
+  }
+
+  const sql = "SELECT * FROM posts WHERE id = ?;";
+
+  connection.query(sql, [id], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: true,
+        message: "Internal Server Error",
+      });
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        error: true,
+        message: "Not Found",
+      });
+    }
+
+    return res.json(results[0]);
+  });
+}
 
 // POST
 function store(req, res) {}
