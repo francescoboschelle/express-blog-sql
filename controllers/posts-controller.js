@@ -133,12 +133,6 @@ function update(req, res) {
             message: err.message,
           });
 
-        if (results.length === 0)
-          return res.status(404).json({
-            error: true,
-            message: "Not Found",
-          });
-
         return res.json(results[0]);
       });
     }
@@ -146,7 +140,70 @@ function update(req, res) {
 }
 
 // PATCH /:id
-function modify(req, res) {}
+function modify(req, res) {
+  const id = parseInt(req.params.id);
+  const body = req.body;
+
+  if (isNaN(id) || !body || (!body.title && !body.content && !body.image)) {
+    return res.status(400).json({
+      error: true,
+      message: "Bad Request",
+    });
+  }
+
+  const selectSql = "SELECT * FROM posts WHERE id = ?;";
+
+  connection.query(selectSql, [id], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: true,
+        message: err.message,
+      });
+
+    if (results.length === 0)
+      return res.status(404).json({
+        error: true,
+        message: "Not Found",
+      });
+
+    const {
+      title: currentTitle,
+      content: currentContent,
+      image: currentImage,
+    } = results[0];
+
+    const updateSql =
+      "UPDATE posts SET title = ?, content = ?, image = ? WHERE id = ?;";
+    connection.query(
+      updateSql,
+      [
+        body.title || currentTitle,
+        body.content || currentContent,
+        body.image || currentImage,
+        id,
+      ],
+      (err, results) => {
+        if (err)
+          return res.status(500).json({
+            error: true,
+            message: err.message,
+          });
+
+        const selectSql = "SELECT * FROM posts WHERE id = ?;";
+
+        connection.query(selectSql, [id], (err, results) => {
+          if (err)
+            return res.status(500).json({
+              error: true,
+              message: err.message,
+            });
+
+          return res.json(results[0]);
+        });
+      }
+    );
+  });
+}
 
 // DELETE /:id
 function destroy(req, res) {
